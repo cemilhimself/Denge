@@ -1,4 +1,4 @@
-const CACHE = "denge-shell-v1";
+const CACHE = "denge-shell-v2";
 const SHELL = [
   "./index.html",
   "./ButceTakip.html",

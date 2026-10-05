@@ -8,7 +8,10 @@ let saveTimer;
 
 const status = (text, state = "") => window.dispatchEvent(new CustomEvent("denge:cloud-status", { detail: { text, state } }));
 const message = (text, open = false) => window.dispatchEvent(new CustomEvent("denge:cloud-message", { detail: { text, open } }));
+const loginMessage = text => window.dispatchEvent(new CustomEvent("denge:login-message", { detail: { text } }));
 const sessionEvent = user => window.dispatchEvent(new CustomEvent("denge:cloud-session", { detail: user || null }));
+const lockApp = text => { document.documentElement.classList.add("auth-pending"); if (text) loginMessage(text); };
+const unlockApp = () => { document.documentElement.classList.remove("auth-pending"); loginMessage(""); };
 const hasContent = payload => Object.values(payload?.months || {}).some(month =>
   Number(month.income) || Number(month.card) || Number(month.savings) ||
   Object.values(month.fixedItems || {}).some(Number) || (month.transactions || []).length ||
@@ -47,10 +50,19 @@ async function pullAndReconcile(user) {
   }
   syncReady = true;
   status("Eşitlendi", "online");
+  unlockApp();
 }
 
 async function boot() {
+  if (location.protocol === "file:") {
+    unlockApp();
+    status("Yalnızca bu cihaz", "");
+    document.getElementById("cloudSignedOut").hidden = true;
+    document.getElementById("cloudHelp").textContent = "Bulut girişi yayınlanan HTTPS adresinde kullanılabilir. Bu dosya sürümü yalnızca bu cihazda çalışır.";
+    return;
+  }
   if (!configured) {
+    unlockApp();
     status("Bulut kurulumu bekliyor", "warn");
     document.getElementById("cloudSignedOut").hidden = true;
     document.getElementById("cloudHelp").textContent = "Supabase projesi bu uygulamaya henüz bağlanmadı. Kurulum adımları README.md dosyasında.";
@@ -58,16 +70,18 @@ async function boot() {
       document.getElementById("cloudHelp").textContent = "Supabase Project URL ve publishable/anon key, supabase-config.js dosyasına eklenince giriş açılır. Şimdilik verilerin bu cihazda kalır.";
       message("Kurulum için README.md dosyasını aç.");
     });
+    }
     return;
   }
   try {
     const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
     client = createClient(config.url, publishableKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
     window.dengeCloud = {
-      async signIn(email) {
-        message("Giriş bağlantısı gönderiliyor…");
-        const { error } = await client.auth.signInWithOtp({ email, options: { emailRedirectTo: location.href.split("#")[0] } });
-        message(error ? `Giriş bağlantısı gönderilemedi: ${error.message}` : "Giriş bağlantısı e-posta adresine gönderildi. Bağlantıyı bu uygulamanın adresinde aç.");
+      async signIn(email, password) {
+        loginMessage("Giriş kontrol ediliyor…");
+        const { error } = await client.auth.signInWithPassword({ email, password });
+        if (error) loginMessage("Giriş başarısız. E-posta ve şifreni kontrol et.");
+        else loginMessage("Giriş başarılı; bütçen yükleniyor…");
       },
       async signOut() {
         const { error } = await client.auth.signOut();
@@ -81,18 +95,21 @@ async function boot() {
           pendingConflict = null;
           syncReady = true;
           status("Eşitlendi", "online");
+          unlockApp();
           message(choice === "cloud" ? "Bulut kaydı bu cihaza alındı." : "Bu cihazdaki kayıt buluta yüklendi.");
-        } catch (error) { status("Eşitleme hatası", "warn"); message(`Kayıt eşitlenemedi: ${error.message}`); }
+        } catch (error) { loginMessage("Bulut eşitlemesi tamamlanamadı. İnternet bağlantını ve tablo ayarını kontrol et."); status("Eşitleme hatası", "warn"); message(`Kayıt eşitlenemedi: ${error.message}`); }
       }
     };
     client.auth.onAuthStateChange((event, session) => {
       sessionEvent(session?.user);
       if (session?.user) {
         if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
-          setTimeout(() => pullAndReconcile(session.user).catch(error => { status("Bağlantı sorunu", "warn"); message(`Bulut kaydı okunamadı: ${error.message}`); }), 0);
+          lockApp("Hesap kontrol ediliyor…");
+          setTimeout(() => pullAndReconcile(session.user).catch(error => { lockApp("Bulut kaydı yüklenemedi. İnternetini veya veritabanı kurulumunu kontrol et."); status("Bağlantı sorunu", "warn"); message(`Bulut kaydı okunamadı: ${error.message}`); }), 0);
         }
       } else {
         syncReady = false;
+        lockApp("Giriş için e-posta adresini ve şifreni yaz.");
         status("Yalnızca bu cihaz", "");
       }
     });
@@ -104,10 +121,10 @@ async function boot() {
     window.addEventListener("online", () => client.auth.getSession().then(({ data }) => data.session?.user && pullAndReconcile(data.session.user).catch(() => status("Bağlantı sorunu", "warn"))));
     const { data: { session } } = await client.auth.getSession();
     sessionEvent(session?.user);
-    if (!session) status("Giriş yapınca eşitlenir", "");
+    if (!session) { lockApp("Giriş için e-posta adresini ve şifreni yaz."); status("Giriş yapınca eşitlenir", ""); }
   } catch (error) {
     status("Bulut bağlantısı açılamadı", "warn");
-    message("Bulut bileşeni yüklenemedi. İnternet bağlantısını kontrol et; bu cihazdaki kayıtların duruyor.");
+    loginMessage("Güvenli giriş bağlantısı yüklenemedi. İnternet bağlantını kontrol et.");
     console.error("Denge cloud setup:", error);
   }
 }

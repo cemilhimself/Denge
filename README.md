@@ -1,6 +1,6 @@
 # Denge — ücretsiz bulut ve iPhone kurulumu
 
-Denge tarayıcıda çalışır. Kayıtlar önce kullandığın tarayıcıda tutulur; Supabase hesabına e-posta bağlantısıyla giriş yaptıktan sonra aynı bütçe bilgisini bilgisayar ve iPhone arasında eşitler. Veritabanında her hesap için tek bir JSON yedeği bulunur ve Row Level Security (RLS) yalnızca o hesaba erişim verir.
+Denge tarayıcıda çalışır. HTTPS ile yayınlanan sürüm, bütçeyi göstermeden önce Supabase Auth üzerinden e-posta ve şifreyle giriş ister. Kayıtlar bilgisayarla iPhone arasında eşitlenir. Veritabanında her hesap için tek bir JSON yedeği bulunur ve Row Level Security (RLS) yalnızca o hesaba erişim verir.
 
 ## 1. Ücretsiz Supabase projesi oluştur
 
@@ -10,8 +10,10 @@ Denge tarayıcıda çalışır. Kayıtlar önce kullandığın tarayıcıda tutu
 4. Proje hazır olunca **SQL Editor** bölümünü aç; `supabase/schema.sql` dosyasının tamamını çalıştır. Bu, kullanıcının sadece kendi kaydını okuyup yazabildiği tablo ve politikaları oluşturur.
 5. **Project Settings → API Keys** (veya **Connect**) ekranından Project URL ve publishable public key değerini al.
 6. `supabase-config.js` dosyasındaki `url` ve `publishableKey` alanlarına bu iki değeri yaz. `service_role` veya secret key kullanma; bu dosya herkese açık web uygulamasının parçasıdır.
-7. **Authentication → URL Configuration** altında uygulamanın yayınlanacağı adresi **Site URL** olarak, aynı adresi **Redirect URLs** listesine ekle. E-posta giriş bağlantısı bu adrese geri döner.
+7. **Authentication → URL Configuration** altında uygulamanın yayınlanacağı adresi **Site URL** ve **Redirect URLs** listesine ekle. Bu adres şifre sıfırlama gibi kimlik doğrulama bağlantılarında kullanılabilir.
 8. **Authentication → Providers → Email** bölümünde e-posta girişinin açık olduğundan emin ol. Supabase’in varsayılan e-posta gönderimi deneme amaçlı ve kısıtlı olabilir; gönderim sınırına ulaşırsan SMTP ayarları gerekir.
+9. **Authentication → Users → Add user → Send invitation** ile kendi e-posta adresini davet et. Davet bağlantısından hesabını oluşturup giriş şifreni kendin belirle; şifreni uygulama dosyalarına veya sohbete yazma.
+10. **Authentication → General configuration** bölümünde **Allow new users to sign up** ayarını kapat. Böylece yalnızca önceden oluşturulmuş Auth kullanıcısı giriş yapabilir.
 
 ## 2. GitHub Pages ile ücretsiz yayınla
 
@@ -28,9 +30,9 @@ GitHub Desktop tek başına Supabase veritabanını veya Auth'i ayarlamaz; `supa
 
 ## 3. İlk eşitleme ve iPhone
 
-1. Yayınlanan HTTPS adresini bilgisayarda aç; **Bulut hesabı** seçeneğine e-posta adresini yaz ve gelen bağlantıyla giriş yap.
+1. Yayınlanan HTTPS adresini aç; giriş ekranına davet ettiğin e-posta adresini ve belirlediğin şifreyi yaz.
 2. Bilgisayarda eski bütçe varsa ve bulut boşsa otomatik olarak ilk kayıt olarak yüklenir. Her iki tarafta da farklı veriler varsa Denge hangi kaydı kullanacağını sorar. “Bu cihazdakini yükle” bulut kaydının yerini alır; istersen önce **Yedeği indir** ile ayrıca kopya sakla.
-3. iPhone’da aynı HTTPS adresini Safari’de açıp aynı e-posta bağlantısıyla giriş yap. Paylaş düğmesi → **Ana Ekrana Ekle** ile uygulama simgesi oluştur. Her cihazın Safari/Chrome yerel deposu ayrı olduğundan cihazlar arasında ortak kullanım için bulut girişi gerekir.
+3. iPhone’da aynı HTTPS adresini Safari’de açıp aynı e-posta ve şifreyle giriş yap. Paylaş düğmesi → **Ana Ekrana Ekle** ile uygulama simgesi oluştur. Her cihazın Safari/Chrome yerel deposu ayrı olduğundan cihazlar arasında ortak kullanım için bulut girişi gerekir.
 
 ## Verinin konumu ve anahtarlar
 
