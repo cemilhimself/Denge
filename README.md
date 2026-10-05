@@ -19,7 +19,7 @@ GitHub Desktop dosyaları GitHub depona aktarır; Pages yayını GitHub.com'daki
 
 1. GitHub Desktop'ta **File → Add local repository** ile bu klasörü ekle. Henüz Git deposu değilse **create a repository** seçip klasör olarak `C:\Codex\Denge` kullan.
 2. **Publish repository** ile GitHub hesabına gönder. GitHub Pages ücretsiz kullanımı için depo görünürlüğü **Public** olmalı. Yalnızca uygulama kodu ve `supabase-config.js` içindeki Project URL/publishable key yayınlanır; parola veya secret/service-role key ekleme.
-3. GitHub.com'da depo sayfasını aç; **Settings → Pages → Build and deployment** bölümünde **Deploy from a branch** ve `main` / `/(root)` seçip **Save**'e bas. Bu seçenek görünmüyorsa **GitHub Actions**'ı seç; `.github/workflows/pages.yml` uygulamanın statik dosyalarını yayınlar. Önce bu workflow dosyasını GitHub'a commit edip push et.
+3. GitHub.com'da depo sayfasını aç; **Settings → Pages → Build and deployment** bölümünde **Deploy from a branch** ve `main` / `/(root)` seçip **Save**'e bas. Denge bu dal yöntemiyle yayınlanır; ayrıca GitHub Actions workflow'u çalıştırmak gerekmez.
 4. GitHub'ın verdiği `https://<kullanıcı-adı>.github.io/Denge/` adresini bekle. Ana sayfa `index.html` üzerinden Denge'yi açar. Bu adresi Supabase **Authentication → URL Configuration** kısmındaki Site URL ve Redirect URLs'e ekle.
 
 GitHub Desktop tek başına Supabase veritabanını veya Auth'i ayarlamaz; `supabase/schema.sql` Supabase SQL Editor'da ayrıca çalıştırılmalı. `index.html`, `manifest.webmanifest` ve service worker proje alt yolu (`/Denge/`) için düzenlenmiştir.
