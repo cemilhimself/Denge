@@ -54,6 +54,13 @@ async function pullAndReconcile(user) {
 }
 
 async function boot() {
+  if (config.localOnly) {
+    unlockApp();
+    status("Yalnızca bu cihaz", "");
+    document.getElementById("cloudAccountBtn").hidden = true;
+    document.getElementById("storageNote").textContent = "Verilerin yalnızca bu tarayıcıda saklanır; başka cihazlarla eşitlenmez.";
+    return;
+  }
   if (location.protocol === "file:") {
     unlockApp();
     status("Yalnızca bu cihaz", "");
