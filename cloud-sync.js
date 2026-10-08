@@ -119,14 +119,19 @@ async function boot() {
       saveTimer = setTimeout(() => push(event.detail).then(() => status("Eşitlendi", "online")).catch(error => { status("Eşitleme bekliyor", "warn"); console.error("Denge cloud sync:", error); }), 700);
     });
     window.addEventListener("online", () => client.auth.getSession().then(({ data }) => data.session?.user && pullAndReconcile(data.session.user).catch(() => status("Bağlantı sorunu", "warn"))));
+    window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: true } }));
     const { data: { session } } = await client.auth.getSession();
     sessionEvent(session?.user);
     if (!session) { lockApp("Giriş için e-posta adresini ve şifreni yaz."); status("Giriş yapınca eşitlenir", ""); }
-    window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: true } }));
   } catch (error) {
-    status("Bulut bağlantısı açılamadı", "warn");
-    loginMessage("Güvenli giriş bağlantısı yüklenemedi. İnternet bağlantını kontrol et.");
-    window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: false } }));
+    if (!window.dengeCloud) {
+      status("Bulut bağlantısı açılamadı", "warn");
+      loginMessage("Güvenli giriş bağlantısı yüklenemedi. İnternet bağlantını kontrol et.");
+      window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: false } }));
+    } else {
+      status("Oturum kontrol ediliyor", "warn");
+      console.error("Denge session initialization:", error);
+    }
     console.error("Denge cloud setup:", error);
   }
 }
