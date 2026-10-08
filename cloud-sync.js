@@ -122,9 +122,11 @@ async function boot() {
     const { data: { session } } = await client.auth.getSession();
     sessionEvent(session?.user);
     if (!session) { lockApp("Giriş için e-posta adresini ve şifreni yaz."); status("Giriş yapınca eşitlenir", ""); }
+    window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: true } }));
   } catch (error) {
     status("Bulut bağlantısı açılamadı", "warn");
     loginMessage("Güvenli giriş bağlantısı yüklenemedi. İnternet bağlantını kontrol et.");
+    window.dispatchEvent(new CustomEvent("denge:cloud-ready", { detail: { ready: false } }));
     console.error("Denge cloud setup:", error);
   }
 }
