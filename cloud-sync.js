@@ -70,7 +70,6 @@ async function boot() {
       document.getElementById("cloudHelp").textContent = "Supabase Project URL ve publishable/anon key, supabase-config.js dosyasına eklenince giriş açılır. Şimdilik verilerin bu cihazda kalır.";
       message("Kurulum için README.md dosyasını aç.");
     });
-    }
     return;
   }
   try {
@@ -137,3 +136,4 @@ async function boot() {
 }
 
 boot();
+
